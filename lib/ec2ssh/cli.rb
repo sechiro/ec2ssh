@@ -25,7 +25,6 @@ module Ec2ssh
     desc "update", "Update ec2 hosts list in ssh_config"
     method_option :aws_key, :banner => "aws key name", :default => "default"
     method_option :use_private_ip, :banner => "Use private DNS name for \"HostName\" entry instead of public DNS name", :type => :boolean, :default => false
-    method_option :prefer_private_ip, :banner => "Use private IP address for \"HostName\" entry if it exists. Otherwise, use public DNS name", :type => :boolean, :default => false
     method_option :prefer_public_dnsname, :banner => "Use public DNS name for \"HostName\" entry if it exists. Otherwise, use private IP address", :type => :boolean, :default => false
     def update
       config = SshConfig.new(config_path, options.aws_key)
@@ -91,29 +90,17 @@ module Ec2ssh
         section_str = hosts.map { |h|
 
           if options.use_private_ip?
-            hostname_entry = h[:private_ip_address] or next nil
-
-          elsif options.prefer_public_dnsname?
-            unless h[:dns_name].nil?
-              hostname_entry = h[:dns_name]
-            else
-              hostname_entry = h[:private_ip_address] or next nil
-            end
-
-          elsif options.prefer_private_ip?
-            unless h[:private_ip_address].nil?
-              hostname_entry = h[:private_ip_address]
-            else
-              hostname_entry = h[:dns_name] or next nil
-            end
-
+            hostname_entry = h[:private_ip_address]
+          elsif options.prefer_public_dns_name?
+            hostname_entry = h[:dns_name].nil? ? h[:private_ip_address] : h[:dns_name]
           else
             hostname_entry = h[:dns_name] or next nil
-
           end
 
-          section = "Host #{h[:host]}\n"
-          section += "  HostName #{hostname_entry}\n"
+          section = <<-"END"
+Host #{h[:host]}
+  HostName #{hostname_entry}
+          END
 
           unless ssh_options.nil?
             ssh_options.each {|line|
