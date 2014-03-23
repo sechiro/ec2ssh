@@ -78,6 +78,19 @@ $ ec2ssh init --dotfile /path/to/ssh_config
 $ ec2ssh update --aws-key my_key1
 ```
 
+### --use-private-ip
+`ec2ssh update` allows `--use-private-ip` option. If there is no Public DNS name, Private IP Address will be used in 'HostName' entry..
+
+```
+$ ec2ssh update --use-private-ip
+```
+
+### --prefer-private-ip
+`ec2ssh update` allows `--prefer-private-ip` option. Private IP Address will be used instead of Public DNS name in 'HostName' entry.
+
+```
+$ ec2ssh update --prefer-private-ip
+```
 
 # ssh_config and mark lines
 `ec2ssh init` command inserts mark lines your `.ssh/config` such as:

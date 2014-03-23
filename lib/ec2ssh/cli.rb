@@ -24,6 +24,8 @@ module Ec2ssh
 
     desc "update", "Update ec2 hosts list in ssh_config"
     method_option :aws_key, :banner => 'aws key name', :default => 'default'
+    method_option :use_private_ip, :banner => 'use private dns name if there is no public dns name', :type => :boolean, :default => false
+    method_option :prefer_private_ip, :banner => 'use private dns name instead of public dns name', :type => :boolean, :default => false
     def update
       config = SshConfig.new(config_path, options.aws_key)
       unless config.mark_exist?
@@ -86,10 +88,25 @@ module Ec2ssh
         ssh_options = dotfile['ssh_options']
 
         section_str = hosts.map { |h|
-          section = <<-END
-Host #{h[:host]}
-  HostName #{h[:dns_name]}
-          END
+          section = "Host #{h[:host]}\n"
+
+          if options.use_private_ip?
+            if h[:dns_name] != nil
+              section += "  HostName #{h[:dns_name]}\n"
+            else
+              section += "  HostName #{h[:private_ip_address]}\n"
+            end
+
+          elsif options.prefer_private_ip?
+            if h[:private_ip_address] != nil
+              section += "  HostName #{h[:private_ip_address]}\n"
+            else
+              section += "  HostName #{h[:dns_name]}\n"
+            end
+
+          else
+            section += "  HostName #{h[:dns_name]}\n"
+          end
 
           unless ssh_options.nil?
             ssh_options.each {|line|
