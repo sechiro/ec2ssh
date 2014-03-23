@@ -29,8 +29,9 @@ module Ec2ssh
           name_tag = instance[:tag_set].find {|tag| tag[:key] == 'Name' }
           next nil if name_tag.nil? || name_tag[:value].nil?
           name = name_tag[:value]
-          dns_name = instance[:dns_name] or next nil
-          private_ip_address = instance[:private_ip_address] or next nil
+          dns_name = instance[:dns_name]
+          private_ip_address = instance[:private_ip_address]
+          next nil if dns_name.nil? && private_ip_address.nil?
           {:host => "#{name}.#{region}", :dns_name => dns_name, :private_ip_address => private_ip_address}
         }.compact.sort {|a,b| a[:host] <=> b[:host] }
       end
