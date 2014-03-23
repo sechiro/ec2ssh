@@ -97,7 +97,7 @@ module Ec2ssh
             hostname_entry = h[:dns_name] or next nil
           end
 
-          section = <<-"END"
+          section = <<-END
 Host #{h[:host]}
   HostName #{hostname_entry}
           END
