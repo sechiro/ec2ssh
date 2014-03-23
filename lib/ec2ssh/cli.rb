@@ -23,9 +23,10 @@ module Ec2ssh
     end
 
     desc "update", "Update ec2 hosts list in ssh_config"
-    method_option :aws_key, :banner => 'aws key name', :default => 'default'
-    method_option :use_private_ip, :banner => 'use private dns name if there is no public dns name', :type => :boolean, :default => false
-    method_option :prefer_private_ip, :banner => 'use private dns name instead of public dns name', :type => :boolean, :default => false
+    method_option :aws_key, :banner => "aws key name", :default => "default"
+    method_option :use_private_ip, :banner => "Use private DNS name for \"HostName\" entry instead of public DNS name", :type => :boolean, :default => false
+    method_option :prefer_private_ip, :banner => "Use private IP address for \"HostName\" entry if it exists. Otherwise, use public DNS name", :type => :boolean, :default => false
+    method_option :prefer_public_dnsname, :banner => "Use public DNS name for \"HostName\" entry if it exists. Otherwise, use private IP address", :type => :boolean, :default => false
     def update
       config = SshConfig.new(config_path, options.aws_key)
       unless config.mark_exist?
@@ -88,25 +89,31 @@ module Ec2ssh
         ssh_options = dotfile['ssh_options']
 
         section_str = hosts.map { |h|
-          section = "Host #{h[:host]}\n"
 
           if options.use_private_ip?
-            if h[:dns_name] != nil
-              section += "  HostName #{h[:dns_name]}\n"
+            hostname_entry = h[:private_ip_address] or next nil
+
+          elsif options.prefer_public_dnsname?
+            unless h[:dns_name].nil?
+              hostname_entry = h[:dns_name]
             else
-              section += "  HostName #{h[:private_ip_address]}\n"
+              hostname_entry = h[:private_ip_address] or next nil
             end
 
           elsif options.prefer_private_ip?
-            if h[:private_ip_address] != nil
-              section += "  HostName #{h[:private_ip_address]}\n"
+            unless h[:private_ip_address].nil?
+              hostname_entry = h[:private_ip_address]
             else
-              section += "  HostName #{h[:dns_name]}\n"
+              hostname_entry = h[:dns_name] or next nil
             end
 
           else
-            section += "  HostName #{h[:dns_name]}\n"
+            hostname_entry = h[:dns_name] or next nil
+
           end
+
+          section = "Host #{h[:host]}\n"
+          section += "  HostName #{hostname_entry}\n"
 
           unless ssh_options.nil?
             ssh_options.each {|line|
