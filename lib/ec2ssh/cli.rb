@@ -23,9 +23,9 @@ module Ec2ssh
     end
 
     desc "update", "Update ec2 hosts list in ssh_config"
-    method_option :aws_key, :banner => "aws key name", :default => "default"
+    method_option :aws_key, :banner => 'aws key name', :default => 'default'
     method_option :use_private_ip, :banner => "Use private DNS name for \"HostName\" entry instead of public DNS name", :type => :boolean, :default => false
-    method_option :prefer_public_dnsname, :banner => "Use public DNS name for \"HostName\" entry if it exists. Otherwise, use private IP address", :type => :boolean, :default => false
+    method_option :prefer_public_dns_name, :banner => "Use public DNS name for \"HostName\" entry if it exists. Otherwise, use private IP address", :type => :boolean, :default => false
     def update
       config = SshConfig.new(config_path, options.aws_key)
       unless config.mark_exist?
