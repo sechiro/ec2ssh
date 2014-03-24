@@ -79,14 +79,14 @@ $ ec2ssh update --aws-key my_key1
 ```
 
 ### --use-private-ip
-`ec2ssh update` allows `--use-private-ip` option. Use private DNS name for "HostName" entry instead of public DNS name.
+`ec2ssh update` allows `--use-private-ip` option. If you specify this option, instances' private DNS name will be used for "HostName" entry instead of public DNS name.
 
 ```
 $ ec2ssh update --use-private-ip
 ```
 
 ### --prefer-public-dns-name
-`ec2ssh update` allows `--prefer-public-dns-name` option. Use public DNS name for "HostName" entry if it exists. Otherwise, use private IP address.
+`ec2ssh update` allows `--prefer-public-dns-name` option. If you specify this option, instances' public DNS name will be used for "HostName" entry if it exists, otherwise private IP address will do.
 
 ```
 $ ec2ssh update --prefer-public-dns-name
